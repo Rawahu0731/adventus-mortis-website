@@ -84,7 +84,7 @@ function HomePage() {
               {
                 icon: <Shield className="h-8 w-8" />,
                 title: "ランキングシステム",
-                description: "文化祭期間中のランキング機能"
+                description: "ライバルたちとの熱い順位争いが君を待つ"
               }
             ].map((feature, index) => (
               <motion.div
@@ -179,7 +179,7 @@ function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   const handleLogin = () => {
-    if (password === 'test') {
+    if (password === 'Adventus') {
       setIsAuthenticated(true)
     } else {
       alert('パスワードが間違っています')
@@ -295,7 +295,7 @@ function AdminPage() {
                     <ol className="list-decimal list-inside space-y-1">
                       <li>画面がフリーズ、または落ちたら一旦落ちたウィンドウを閉じてください。</li>
                       <li>AdventusMortisのフォルダから「ADV_FPStemplate.exe」を探してダブルクリックしてください。</li>
-                      <li>ゲームを再起動しても動かない場合はすぐにSlackで（自分の名前）にDMしてください。</li>
+                      <li>ゲームを再起動しても動かない場合はSlackで竹内柚翔にDMしてください。</li>
                     </ol>
                   </div>
 
@@ -304,14 +304,14 @@ function AdminPage() {
                     <ol className="list-decimal list-inside space-y-1">
                       <li>ランキングが表示されない場合はしばらく待ってください（1分以上待っても更新されない場合は異常です）</li>
                       <li>PCのインターネット接続が問題ないか確認してください。</li>
-                      <li>上記で解消しない場合はSlackで（自分の名前）にDMしてください。</li>
+                      <li>上記で解消しない場合はSlackで竹内柚翔にDMしてください。</li>
                     </ol>
                   </div>
 
                   <div className="border-l-4 border-green-600 pl-4 space-y-2">
                     <h4 className="font-bold text-lg">その他困ったことがあった場合</h4>
                     <ul className="list-disc list-inside space-y-1">
-                      <li>PCの設定を確認しても問題が無い場合はSlackで（自分の名前）にDMしてください。</li>
+                      <li>PCの設定を確認しても問題が無い場合はSlackで竹内柚翔にDMしてください。</li>
                     </ul>
                   </div>
                 </div>
