@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Skull, Target, Zap, Shield, Users, Lock } from 'lucide-react'
@@ -11,7 +11,7 @@ import heroImage from './assets/adventus_mortis_hero.png'
 import './App.css'
 
 // Home Page Component
-function HomePage() {
+function HomePage({ showRanking, ranking, lastUpdated, rankingEnabled }) {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
@@ -110,47 +110,42 @@ function HomePage() {
         </div>
       </section>
 
-      {/* System Requirements
-      <section className="py-20 px-4 bg-card/50">
-        <div className="max-w-4xl mx-auto">
+      {/* ランキング表示 */}
+      <section className="py-12 px-4 bg-card/50">
+        <div className="max-w-3xl mx-auto">
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.8 }}
-            className="text-center mb-16"
+            className="text-center mb-8"
           >
-            <h2 className="text-4xl font-bold mb-4 blood-text">システム要件</h2>
+            <h2 className="text-3xl font-bold mb-4 blood-text">ランキング TOP10</h2>
+            <p className="text-lg text-gray-400">最強の生存者たち</p>
+            {rankingEnabled ? (
+              <p className="text-sm text-gray-500 mt-2">
+                最終更新: {lastUpdated ? new Date(lastUpdated).toLocaleTimeString() : "未取得"}
+              </p>
+            ) : (
+              <p className="text-red-400 font-bold mt-2">ランキング機能は現在OFFです</p>
+            )}
           </motion.div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            <Card className="horror-gradient border-red-900/30">
-              <CardHeader>
-                <CardTitle className="text-green-400">推奨環境</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 text-gray-300">
-                <p><strong>OS:</strong> Windows 10 64-bit</p>
-                <p><strong>CPU:</strong> Intel i7-8700K / AMD Ryzen 7 2700X</p>
-                <p><strong>メモリ:</strong> 16 GB RAM</p>
-                <p><strong>グラフィック:</strong> RTX 3070 / RX 6700 XT</p>
-                <p><strong>ストレージ:</strong> 50 GB 利用可能領域</p>
-              </CardContent>
-            </Card>
-
-            <Card className="horror-gradient border-red-900/30">
-              <CardHeader>
-                <CardTitle className="text-yellow-400">最小環境</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 text-gray-300">
-                <p><strong>OS:</strong> Windows 10 64-bit</p>
-                <p><strong>CPU:</strong> Intel i5-6600K / AMD Ryzen 5 1600</p>
-                <p><strong>メモリ:</strong> 8 GB RAM</p>
-                <p><strong>グラフィック:</strong> GTX 1060 / RX 580</p>
-                <p><strong>ストレージ:</strong> 50 GB 利用可能領域</p>
-              </CardContent>
-            </Card>
+          <div className="bg-background/80 rounded-lg shadow-lg p-6">
+            {rankingEnabled && ranking.length > 0 ? (
+              <ol className="space-y-3">
+                {ranking.map((item, idx) => (
+                  <li key={idx} className="flex items-center justify-between px-4 py-2 border-b border-red-900/20">
+                    <span className="font-bold text-red-400">{idx + 1}位</span>
+                    <span className="text-white">{item.name}</span>
+                    <span className="text-yellow-400 font-mono">{item.score}</span>
+                  </li>
+                ))}
+              </ol>
+            ) : rankingEnabled ? (
+              <p className="text-gray-400 text-center">ランキングデータがありません</p>
+            ) : null}
           </div>
         </div>
-      </section> */}
+      </section>
 
       {/* CTA Section */}
       <section className="py-20 px-4">
@@ -174,7 +169,7 @@ function HomePage() {
 }
 
 // Admin Page Component
-function AdminPage() {
+function AdminPage({ rankingEnabled, setRankingEnabled }) {
   const [password, setPassword] = useState('')
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
@@ -227,61 +222,24 @@ function AdminPage() {
         >
           <h1 className="text-4xl font-bold mb-8 blood-text">関係者専用ダッシュボード</h1>
 
-          {/* <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card className="horror-gradient border-red-900/30">
-              <CardHeader>
-                <CardTitle className="text-green-400">開発状況</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>ゲームプレイ</span>
-                    <Badge className="bg-green-600">完了</Badge>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>グラフィック</span>
-                    <Badge className="bg-green-600">完了</Badge>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>サウンド</span>
-                    <Badge className="bg-yellow-600">進行中</Badge>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>最適化</span>
-                    <Badge className="bg-red-600">未着手</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="horror-gradient border-red-900/30">
-              <CardHeader>
-                <CardTitle className="text-blue-400">統計情報</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 text-gray-300">
-                  <p><strong>総プレイ時間:</strong> 1,234時間</p>
-                  <p><strong>バグ報告:</strong> 23件</p>
-                  <p><strong>テスター数:</strong> 15人</p>
-                  <p><strong>完成度:</strong> 85%</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="horror-gradient border-red-900/30">
-              <CardHeader>
-                <CardTitle className="text-purple-400">リリース予定</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 text-gray-300">
-                  <p><strong>アルファ版:</strong> 完了</p>
-                  <p><strong>ベータ版:</strong> 2025年3月</p>
-                  <p><strong>正式版:</strong> 2025年6月</p>
-                  <p><strong>DLC第1弾:</strong> 2025年9月</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div> */}
+          {/* ランキング取得ON/OFF */}
+          <Card className="mb-8 horror-gradient border-red-900/30">
+            <CardHeader>
+              <CardTitle className="text-red-400">ランキング表示設定</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-4">
+                <label className="text-gray-300 font-bold">ランキング表示</label>
+                <Button
+                  variant={rankingEnabled ? "default" : "outline"}
+                  className={rankingEnabled ? "bg-green-600" : "bg-gray-600"}
+                  onClick={() => setRankingEnabled(!rankingEnabled)}
+                >
+                  {rankingEnabled ? "ON" : "OFF"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
 
           <div className="mt-8">
             <Card className="horror-gradient border-red-900/30">
@@ -352,14 +310,99 @@ function Navigation() {
 
 // Main App Component
 function App() {
+  const [ranking, setRanking] = useState([])
+  const [rankingEnabled, setRankingEnabled] = useState(true)
+  const [lastUpdated, setLastUpdated] = useState(null)
+  const intervalRef = useRef(null)
+
+  // サーバーからランキングON/OFF状態を取得
+  const fetchRankingEnabled = () => {
+    fetch('https://adventusmortis-scoreserver.onrender.com/ranking-enabled')
+      .then(res => res.json())
+      .then(data => setRankingEnabled(!!data.enabled))
+      .catch(() => setRankingEnabled(true))
+  }
+
+  // ランキング取得関数
+  const fetchRanking = () => {
+    if (!rankingEnabled) {
+      setRanking([])
+      setLastUpdated(null)
+      return
+    }
+    fetch('https://adventusmortis-scoreserver.onrender.com/ranking')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data.ranking)) {
+          setRanking(data.ranking.slice(0, 10))
+        } else {
+          setRanking([])
+        }
+        setLastUpdated(Date.now())
+      })
+      .catch((err) => {
+        console.error('ランキング取得失敗:', err)
+        setRanking([])
+        setLastUpdated(null)
+      })
+  }
+
+  // 初回と60秒ごとにランキングON/OFF状態を取得
+  useEffect(() => {
+    fetchRankingEnabled()
+    const interval = setInterval(fetchRankingEnabled, 60000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // ランキングON/OFF状態が変わったらランキング取得
+  useEffect(() => {
+    fetchRanking()
+    if (intervalRef.current) clearInterval(intervalRef.current)
+    if (rankingEnabled) {
+      intervalRef.current = setInterval(fetchRanking, 60000)
+    }
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current)
+    }
+  }, [rankingEnabled])
+
+  // 管理者画面からON/OFF変更時にサーバーへ反映
+  const handleRankingEnabledChange = (newValue) => {
+    fetch('https://adventusmortis-scoreserver.onrender.com/ranking-enabled', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled: newValue })
+    })
+      .then(() => setRankingEnabled(newValue))
+      .catch(() => alert('設定変更に失敗しました'))
+  }
+
   return (
     <Router>
       <div className="dark">
         <Navigation />
         <div className="pt-20">
           <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/admin" element={<AdminPage />} />
+            <Route
+              path="/"
+              element={
+                <HomePage
+                  showRanking={rankingEnabled}
+                  ranking={ranking}
+                  lastUpdated={lastUpdated}
+                  rankingEnabled={rankingEnabled}
+                />
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <AdminPage
+                  rankingEnabled={rankingEnabled}
+                  setRankingEnabled={handleRankingEnabledChange}
+                />
+              }
+            />
           </Routes>
         </div>
       </div>
