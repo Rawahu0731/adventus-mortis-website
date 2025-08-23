@@ -171,17 +171,40 @@ function HomePage({ showRanking, ranking, lastUpdated, rankingEnabled }) {
 // Admin Page Component
 function AdminPage({ rankingEnabled, setRankingEnabled }) {
   const [password, setPassword] = useState('')
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [authLevel, setAuthLevel] = useState(null) // null, 'member', 'owner'
 
   const handleLogin = () => {
     if (password === 'Adventus') {
-      setIsAuthenticated(true)
+      setAuthLevel('member')
+    } else if (password === 'Yuzu0731Adventus') {
+      setAuthLevel('owner')
     } else {
       alert('パスワードが間違っています')
     }
   }
 
-  if (!isAuthenticated) {
+  // ON/OFF切り替え時の確認
+  const handleRankingToggle = () => {
+    if (rankingEnabled) {
+      if (
+        window.confirm(
+          'ランキング表示をOFFにするとランキングデータが消失する恐れがあります。本当にOFFにしますか？'
+        )
+      ) {
+        setRankingEnabled(false)
+      }
+    } else {
+      if (
+        window.confirm(
+          'ランキング表示をONにしますか？'
+        )
+      ) {
+        setRankingEnabled(true)
+      }
+    }
+  }
+
+  if (!authLevel) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Card className="w-full max-w-md horror-gradient border-red-900/30">
@@ -222,25 +245,28 @@ function AdminPage({ rankingEnabled, setRankingEnabled }) {
         >
           <h1 className="text-4xl font-bold mb-8 blood-text">関係者専用ダッシュボード</h1>
 
-          {/* ランキング取得ON/OFF */}
-          <Card className="mb-8 horror-gradient border-red-900/30">
-            <CardHeader>
-              <CardTitle className="text-red-400">ランキング表示設定</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4">
-                <label className="text-gray-300 font-bold">ランキング表示</label>
-                <Button
-                  variant={rankingEnabled ? "default" : "outline"}
-                  className={rankingEnabled ? "bg-green-600" : "bg-gray-600"}
-                  onClick={() => setRankingEnabled(!rankingEnabled)}
-                >
-                  {rankingEnabled ? "ON" : "OFF"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          {/* ランキング取得ON/OFF（自分だけ） */}
+          {authLevel === 'owner' && (
+            <Card className="mb-8 horror-gradient border-red-900/30">
+              <CardHeader>
+                <CardTitle className="text-red-400">ランキング表示設定</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-4">
+                  <label className="text-gray-300 font-bold">ランキング表示</label>
+                  <Button
+                    variant={rankingEnabled ? "default" : "outline"}
+                    className={rankingEnabled ? "bg-green-600" : "bg-gray-600"}
+                    onClick={handleRankingToggle}
+                  >
+                    {rankingEnabled ? "ON" : "OFF"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
+          {/* 困ったときは（部員全員） */}
           <div className="mt-8">
             <Card className="horror-gradient border-red-900/30">
               <CardHeader>
