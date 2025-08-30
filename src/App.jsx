@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Skull, Target, Zap, Shield, Users, Lock } from 'lucide-react'
+import { Skull, Target, Zap, Shield, Users, Lock, MousePointer, ArrowUpDown, Crosshair, ArrowUp, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button.jsx'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.jsx'
 import { Input } from '@/components/ui/input.jsx'
@@ -105,6 +105,40 @@ function HomePage({ showRanking, ranking, lastUpdated, rankingEnabled }) {
                   </CardContent>
                 </Card>
               </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 操作方法 Section */}
+      <section className="py-12 px-4 bg-card/40">
+        <div className="max-w-3xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7 }}
+            className="text-center mb-8"
+          >
+            <h2 className="text-3xl font-bold mb-4 blood-text">操作方法</h2>
+            <p className="text-lg text-gray-400">基本操作を覚えて生き残れ！</p>
+          </motion.div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {[
+              { icon: <ArrowUpDown className="text-red-400 w-8 h-8" />, label: "移動", key: "WASDキー" },
+              { icon: <MousePointer className="text-red-400 w-8 h-8" />, label: "視点移動", key: "マウス操作" },
+              { icon: <Crosshair className="text-red-400 w-8 h-8" />, label: "エイム（ADS）", key: "右クリック" },
+              { icon: <Zap className="text-red-400 w-8 h-8" />, label: "射撃", key: "左クリック" },
+              { icon: <ArrowUp className="text-red-400 w-8 h-8" />, label: "ジャンプ", key: "スペースキー" },
+              { icon: <RotateCcw className="text-red-400 w-8 h-8" />, label: "リロード", key: "Rキー" },
+              { icon: <Zap className="text-red-400 w-8 h-8" />, label: "ダッシュ", key: "左Shiftキー" },
+            ].map((item, idx) => (
+              <Card key={idx} className="flex items-center gap-4 bg-background/90 border-red-900/30 hover:border-red-600/50 transition-all duration-300">
+                <div>{item.icon}</div>
+                <div>
+                  <div className="font-bold text-red-400">{item.label}</div>
+                  <div className="text-gray-200">{item.key}</div>
+                </div>
+              </Card>
             ))}
           </div>
         </div>
