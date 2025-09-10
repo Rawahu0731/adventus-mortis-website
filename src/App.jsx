@@ -269,6 +269,99 @@ function AdminPage({ rankingEnabled, setRankingEnabled }) {
     )
   }
 
+  // スコア削除フォーム（オーナー専用）
+  function DeleteScoreForm() {
+    const [name, setName] = useState('')
+    const [score, setScore] = useState('')
+
+    const handleDelete = async () => {
+      if (!name || !score) {
+        alert('名前とスコアを入力してください')
+        return
+      }
+      if (
+        window.confirm(
+          `本当に「${name}」のスコア「${score}」を削除しますか？\nこの操作は元に戻せません。`
+        )
+      ) {
+        try {
+          const res = await fetch('https://adventusmortis-scoreserver.onrender.com/delete-score', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, score: Number(score) })
+          })
+          if (res.ok) {
+            alert('削除が完了しました')
+            setName('')
+            setScore('')
+          } else {
+            alert('削除に失敗しました')
+          }
+        } catch {
+          alert('通信エラーが発生しました')
+        }
+      }
+    }
+
+    return (
+      <div className="flex flex-col gap-4">
+        <Input
+          type="text"
+          placeholder="ユーザー名"
+          value={name}
+          onChange={e => setName(e.target.value)}
+          className="bg-input border-red-900/30"
+        />
+        <Input
+          type="number"
+          placeholder="スコア値"
+          value={score}
+          onChange={e => setScore(e.target.value)}
+          className="bg-input border-red-900/30"
+        />
+        <Button
+          className="bg-red-600 hover:bg-red-700"
+          onClick={handleDelete}
+        >
+          スコアを削除
+        </Button>
+      </div>
+    )
+  }
+
+  function DownloadRankingButton() {
+    const handleDownload = async () => {
+      try {
+        const res = await fetch('https://adventusmortis-scoreserver.onrender.com/ranking')
+        if (!res.ok) {
+          alert('ダウンロードに失敗しました')
+          return
+        }
+        const data = await res.json()
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'ranking.json'
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+        URL.revokeObjectURL(url)
+      } catch {
+        alert('通信エラーが発生しました')
+      }
+    }
+
+    return (
+      <Button
+        className="bg-blue-600 hover:bg-blue-700 mb-4"
+        onClick={handleDownload}
+      >
+        ランキングデータをダウンロード
+      </Button>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-6xl mx-auto">
@@ -281,59 +374,120 @@ function AdminPage({ rankingEnabled, setRankingEnabled }) {
 
           {/* ランキング取得ON/OFF（自分だけ） */}
           {authLevel === 'owner' && (
-            <Card className="mb-8 horror-gradient border-red-900/30">
+            <>
+              <DownloadRankingButton />
+              <Card className="mb-8 horror-gradient border-red-900/30">
+                <CardHeader>
+                  <CardTitle className="text-red-400">ランキング表示設定</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-4">
+                    <label className="text-gray-300 font-bold">ランキング表示</label>
+                    <Button
+                      variant={rankingEnabled ? "default" : "outline"}
+                      className={rankingEnabled ? "bg-green-600" : "bg-gray-600"}
+                      onClick={handleRankingToggle}
+                    >
+                      {rankingEnabled ? "ON" : "OFF"}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* スコア削除（オーナー専用） */}
+              <Card className="mb-8 horror-gradient border-red-900/30">
+                <CardHeader>
+                  <CardTitle className="text-red-400">スコア削除（オーナー専用）</CardTitle>
+                  <CardDescription className="text-gray-400">
+                    名前とスコア値を正確に入力してください
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <DeleteScoreForm />
+                </CardContent>
+              </Card>
+            </>
+          )}
+
+
+          {/* 景品配布について（部員全員） */}
+          <div className="mt-8">
+            <Card className="horror-gradient border-yellow-900/30">
               <CardHeader>
-                <CardTitle className="text-red-400">ランキング表示設定</CardTitle>
+                <CardTitle className="text-yellow-400">景品配布について</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center gap-4">
-                  <label className="text-gray-300 font-bold">ランキング表示</label>
-                  <Button
-                    variant={rankingEnabled ? "default" : "outline"}
-                    className={rankingEnabled ? "bg-green-600" : "bg-gray-600"}
-                    onClick={handleRankingToggle}
-                  >
-                    {rankingEnabled ? "ON" : "OFF"}
-                  </Button>
+                <div className="space-y-4 text-gray-300">
+                  <ul className="list-disc list-inside space-y-2">
+                    <li>
+                      <span className="font-bold text-yellow-400">Sランクを取った人にお菓子を配布します。</span>
+                    </li>
+                    <li>
+                      Sランク達成時、画面に「スタッフを呼んでください」と表示されます。
+                    </li>
+                    <li>
+                      <span className="font-bold text-yellow-400">お菓子がなくなったら配布終了です。</span>
+                    </li>
+                    <li>
+                      景品がなくなった場合は、<span className="font-bold">「スタッフを呼ぶ」表示を無効化</span>してください。
+                    </li>
+                  </ul>
+                  <div className="border-l-4 border-yellow-600 pl-4 mt-4">
+                    <div className="font-bold mb-2 text-yellow-400">無効化手順</div>
+                    <ol className="list-decimal list-inside space-y-1">
+                      <li>タイトル画面でCTRL + SHIFT + D を押してメニューを開く</li>
+                      <li>パスワードに <span className="font-mono">AdventusAdmin</span> を入力</li>
+                      <li>「スタッフ呼び出し表示」機能をOFFにする</li>
+                    </ol>
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          )}
+          </div>
 
           {/* 困ったときは（部員全員） */}
           <div className="mt-8">
             <Card className="horror-gradient border-red-900/30">
               <CardHeader>
-                <CardTitle className="text-red-400">困ったときは</CardTitle>
+                <CardTitle className="text-red-400">困ったときは（展示担当者向け）</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6 text-gray-300">
                   <div className="border-l-4 border-red-600 pl-4 space-y-2">
-                    <h4 className="font-bold text-lg">ゲームが落ちた場合</h4>
+                    <h4 className="font-bold text-lg">ゲームが落ちた・動かない場合</h4>
                     <ol className="list-decimal list-inside space-y-1">
-                      <li>画面がフリーズ、または落ちたら一旦落ちたウィンドウを閉じてください。</li>
-                      <li>AdventusMortisのフォルダから「ADV_FPStemplate.exe」を探してダブルクリックしてください。</li>
-                      <li>ゲームを再起動しても動かない場合はSlackで竹内柚翔にDMしてください。</li>
+                      <li>画面がフリーズ、または落ちたらウィンドウを閉じてください（<span className="font-mono">ALT+F4</span>で強制終了）。</li>
+                      <li>デスクトップのAdventusMortisショートカットをダブルクリックして再起動してください。</li>
+                      <li>ゲームを再起動しても動かない場合は、PCを再起動してください。</li>
+                      <li>それでも解決しない場合は、Slackで竹内柚翔にDMしてください。</li>
                     </ol>
                   </div>
 
                   <div className="border-l-4 border-yellow-600 pl-4 space-y-2">
-                    <h4 className="font-bold text-lg">ランキング機能が正しく動かない場合</h4>
+                    <h4 className="font-bold text-lg">ランキングが表示されない・更新されない場合</h4>
                     <ol className="list-decimal list-inside space-y-1">
-                      <li>ランキングが表示されない場合はしばらく待ってください（1分以上待っても更新されない場合は異常です）</li>
-                      <li>PCのインターネット接続が問題ないか確認してください。</li>
-                      <li>上記で解消しない場合はSlackで竹内柚翔にDMしてください。</li>
+                      <li>1分以上待ってもランキングが更新されない場合は、PCのインターネット接続を確認してください。</li>
+                      <li>Wi-Fiが切れている場合は再接続してください。</li>
+                      <li>それでも表示されない場合は、Slackで竹内柚翔にDMしてください。</li>
                     </ol>
                   </div>
 
-                  <div className="border-l-4 border-green-600 pl-4 space-y-2">
-                    <h4 className="font-bold text-lg">その他困ったことがあった場合</h4>
+                  <div className="border-l-4 border-blue-600 pl-4 space-y-2">
+                    <h4 className="font-bold text-lg">来場者対応で困った場合</h4>
                     <ul className="list-disc list-inside space-y-1">
-                      <li>PCの設定を確認しても問題が無い場合はSlackで竹内柚翔にDMしてください。</li>
+                      <li>操作方法が分からない方には「操作方法」セクションを案内してください。</li>
+                      <li>混雑時は順番待ちの案内や、プレイ時間の調整をお願いします。</li>
+                      <li>不正行為（改造・外部ツール使用など）が疑われる場合は、全力で止めてください</li>
+                    </ul>
+                  </div>
+
+                  <div className="border-l-4 border-gray-600 pl-4 space-y-2">
+                    <h4 className="font-bold text-lg">その他・緊急時</h4>
+                    <ul className="list-disc list-inside space-y-1">
+                      <li>分からないことや困ったことは、どんな内容でも<strong>気軽に</strong>Slackで竹内柚翔にDMしてください。</li>
                     </ul>
                   </div>
                 </div>
-
               </CardContent>
             </Card>
           </div>
